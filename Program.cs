@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Threading;
 using uPLibrary.Networking.M2Mqtt;
@@ -8,6 +10,21 @@ namespace MqttPowerState
 {
     class Program
     {
+        public static bool CheckForInternetConnection(int timeoutMs = 10000, string url = null)
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.KeepAlive = false;
+                request.Timeout = timeoutMs;
+                using var response = (HttpWebResponse)request.GetResponse();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         static void Main(string[] args)
         {
@@ -28,6 +45,13 @@ namespace MqttPowerState
             {
                 throw new ArgumentException("Invalid argument. Must be 'wake' or 'sleep'.");
             }
+
+            var tries = 0;
+            while (tries < 3 && !CheckForInternetConnection(10000, "http://www.gstatic.com/generate_204"))
+            {
+                tries++;
+            }
+
             var host = Environment.GetEnvironmentVariable("MQTT_HOST");
             var port = int.Parse(Environment.GetEnvironmentVariable("MQTT_PORT"));
             var user = Environment.GetEnvironmentVariable("MQTT_USERNAME");
@@ -39,5 +63,7 @@ namespace MqttPowerState
             Thread.Sleep(250);
             client.Disconnect();
         }
+
+
     }
 }

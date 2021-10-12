@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MqttPowerState": {
+      "commandName": "Project",
+      "commandLineArgs": "wake"
+    }
+  }
+}
